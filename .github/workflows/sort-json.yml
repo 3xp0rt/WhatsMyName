@@ -18,63 +18,80 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Create sorting script
+      - name: Install dependencies
+        run: npm install --global prettier ajv
+
+      - name: Create sorting + validation script
         run: |
           cat << 'EOF' > sort-wmn-data.js
-          const fs = require('fs');
+          const fs = require("fs");
+          const Ajv = require("ajv");
 
-          const dataPath = 'wmn-data.json';
-          const schemaPath = 'wmn-data-schema.json';
+          const dataPath = "wmn-data.json";
+          const schemaPath = "wmn-data-schema.json";
 
-          const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-          const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+          const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+          const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
 
-          // Get key order dynamically from schema
-          const siteSchema = schema.properties?.sites?.items;
-          const keyOrder = Array.isArray(siteSchema?.required) ? siteSchema.required : [];
+          function sortArrayAlphabetically(arr) {
+            return arr.sort((a, b) => a.localeCompare(b));
+          }
 
-          // Sort authors and categories
+          function reorderObjectKeys(obj, keyOrder) {
+            const reordered = {};
+            keyOrder.forEach((key) => {
+              if (key in obj) reordered[key] = obj[key];
+            });
+            Object.keys(obj).forEach((key) => {
+              if (!keyOrder.includes(key)) reordered[key] = obj[key];
+            });
+            return reordered;
+          }
+
+          const siteSchema = schema?.properties?.sites?.items;
+          if (!siteSchema || !Array.isArray(siteSchema.required)) {
+            console.error("Schema is missing 'sites.items.required' structure.");
+            process.exit(1);
+          }
+          const keyOrder = siteSchema.required;
+
           if (Array.isArray(data.authors)) {
-            data.authors.sort((a, b) => a.localeCompare(b));
+            data.authors = sortArrayAlphabetically(data.authors);
           }
 
           if (Array.isArray(data.categories)) {
-            data.categories.sort((a, b) => a.localeCompare(b));
+            data.categories = sortArrayAlphabetically(data.categories);
           }
 
-          // Sort sites by name, and reorder keys based on schema
           if (Array.isArray(data.sites)) {
             data.sites.sort((a, b) => a.name.localeCompare(b.name));
-
-            data.sites = data.sites.map(site => {
-              const reordered = {};
-
-              // Keep schema-defined keys in order
-              keyOrder.forEach(key => {
-                if (key in site) {
-                  reordered[key] = site[key];
-                }
-              });
-
-              // Add any remaining keys not in schema-defined order
-              Object.keys(site).forEach(key => {
-                if (!keyOrder.includes(key)) {
-                  reordered[key] = site[key];
-                }
-              });
-
-              return reordered;
-            });
+            data.sites = data.sites.map((site) =>
+              reorderObjectKeys(site, keyOrder)
+            );
           }
 
-          fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-          console.log('wmn-data.json sorted and reordered according to schema');
+          const ajv = new Ajv({ allErrors: true });
+          const validate = ajv.compile(schema);
+          const isValid = validate(data);
+
+          if (!isValid) {
+            console.error("Validation failed:");
+            console.error(validate.errors);
+            process.exit(1);
+          }
+
+          const result = JSON.stringify(data, null, 2) + "\\n";
+          const original = fs.readFileSync(dataPath, "utf8");
+          if (original === result) {
+            console.log("No changes. Sorted and validated.");
+            process.exit(0);
+          }
+
+          fs.writeFileSync(dataPath, result);
+          console.log("wmn-data.json sorted and validated successfully.");
           EOF
 
-      - name: Install Prettier
-        run: npm install --global prettier
-
-      - name: Run sorting script and format
+      - name: Run sort and validate
         run: |
           node sort-wmn-data.js
           prettier --write wmn-data.json
@@ -84,5 +101,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add wmn-data.json
-          git diff --cached --quiet || git commit -m "chore: auto-sort wmn-data.json by schema"
+          git diff --cached --quiet || git commit -m "chore: auto-sort and validate wmn-data.json"
           git push

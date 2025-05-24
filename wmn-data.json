@@ -7234,7 +7234,7 @@
       "uri_pretty": "https://x.com/{account}"
     },
     {
-      "name": "Xakep.ru",
+      "name": "вXakep.ru",
       "uri_check": "https://xakep.ru/author/{account}/",
       "e_code": 200,
       "e_string": "authorBlock-avatar",
