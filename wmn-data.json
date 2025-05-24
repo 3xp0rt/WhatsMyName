@@ -1723,6 +1723,16 @@
       "uri_pretty": "https://www.duolingo.com/profile/{account}"
     },
     {
+      "name": "dвXakep.ru",
+      "uri_check": "https://xakep.ru/author/{account}/",
+      "e_code": 200,
+      "e_string": "authorBlock-avatar",
+      "m_string": "Страница не найдена",
+      "m_code": 404,
+      "known": ["tr3harder", "stariy"],
+      "cat": "tech"
+    },
+    {
       "name": "easyen",
       "uri_check": "https://easyen.ru/index/8-0-{account}",
       "e_code": 200,
@@ -7234,27 +7244,6 @@
       "uri_pretty": "https://x.com/{account}"
     },
     {
-      "name": "dвXakep.ru",
-      "uri_check": "https://xakep.ru/author/{account}/",
-      "e_code": 200,
-      "e_string": "authorBlock-avatar",
-      "m_string": "Страница не найдена",
-      "m_code": 404,
-      "known": ["tr3harder", "stariy"],
-      "cat": "tech"
-    },
-    {
-      "name": "xXanga",
-      "uri_check": "http://{account}.xanga.com/",
-      "e_code": 200,
-      "e_string": "s Xanga Site | Just",
-      "m_string": "",
-      "m_code": 302,
-      "known": ["john"],
-      "cat": "blog",
-      "strip_bad_char": "."
-    },
-    {
       "name": "Xbox Gamertag",
       "uri_check": "https://www.xboxgamertag.com/search/{account}",
       "e_code": 200,
@@ -7313,6 +7302,17 @@
       "m_code": 404,
       "known": ["nympho-nailer", "dpadicto", "bkg"],
       "cat": "xx NSFW xx"
+    },
+    {
+      "name": "xXanga",
+      "uri_check": "http://{account}.xanga.com/",
+      "e_code": 200,
+      "e_string": "s Xanga Site | Just",
+      "m_string": "",
+      "m_code": 302,
+      "known": ["john"],
+      "cat": "blog",
+      "strip_bad_char": "."
     },
     {
       "name": "Yahoo! JAPAN Auction",
