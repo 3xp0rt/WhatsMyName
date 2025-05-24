@@ -15,7 +15,7 @@
                    "tech","video","xx NSFW xx"],
     "sites" : [
        {
-        "name" : "TMastodon-101010.pl",
+        "name" : "Mastodon-101010.pl",
         "uri_check" : "https://101010.pl/@{account}",
         "e_code" : 200,
         "e_string" : "@101010.pl",
@@ -25,7 +25,7 @@
         "cat" : "social"
        },
        {
-        "name" : "3DNews",
+        "name" : "t3DNews",
         "uri_check" : "https://forum.3dnews.tech/member.php?username={account}",
         "e_code" : 200,
         "e_string" : "Просмотр профиля:",

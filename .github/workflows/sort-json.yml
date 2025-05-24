@@ -1,16 +1,14 @@
-name: Sort and Format JSON
+name: Sort and Format wmn-data.json
 
 on:
   push:
     paths:
-      - '**.json'
-  pull_request:
-    paths:
-      - '**.json'
+      - 'wmn-data.json'
 
 jobs:
   sort-json:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -19,18 +17,42 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install json-sort-cli prettier --global
-
-      - name: Sort and Format JSON
+      - name: Create sorting script
         run: |
-          find . -name "*.json" -print0 | xargs -0 -I {} json-sort -k name {} > temp && mv temp {}
-          prettier --write "**/*.json"
+          cat << 'EOF' > sort-wmn-data.js
+          const fs = require('fs');
 
-      - name: Commit changes
+          const filePath = 'wmn-data.json';
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          if (Array.isArray(data.authors)) {
+            data.authors.sort((a, b) => a.localeCompare(b));
+          }
+
+          if (Array.isArray(data.categories)) {
+            data.categories.sort((a, b) => a.localeCompare(b));
+          }
+
+          if (Array.isArray(data.sites)) {
+            data.sites.sort((a, b) => a.name.localeCompare(b.name));
+          }
+
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+          console.log('Sorted wmn-data.json');
+          EOF
+
+      - name: Install Prettier
+        run: npm install --global prettier
+
+      - name: Run sorting script and format
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add .
-          git diff --cached --quiet || git commit -m "chore: auto-sort and format JSON"
+          node sort-wmn-data.js
+          prettier --write wmn-data.json
+
+      - name: Commit if changed
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add wmn-data.json
+          git diff --cached --quiet || git commit -m "chore: auto-sort and format wmn-data.json"
           git push
