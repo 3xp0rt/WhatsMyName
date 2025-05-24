@@ -18,8 +18,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install --global prettier ajv
+      - name: Initialize npm and install dependencies
+        run: |
+          npm init -y
+          npm install ajv prettier
 
       - name: Create sorting + validation script
         run: |
