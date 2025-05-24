@@ -15,7 +15,7 @@
                    "tech","video","xx NSFW xx"],
     "sites" : [
        {
-        "name" : "Mastodon-101010.pl",
+        "name" : "TMastodon-101010.pl",
         "uri_check" : "https://101010.pl/@{account}",
         "e_code" : 200,
         "e_string" : "@101010.pl",
