@@ -342,7 +342,7 @@
       "cat": "gaming"
     },
     {
-      "name": "Appian",
+      "name": "1Appian",
       "uri_check": "https://community.appian.com/members/{account}",
       "e_code": 200,
       "e_string": "User Profile",
