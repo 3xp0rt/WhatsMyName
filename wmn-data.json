@@ -7244,7 +7244,7 @@
       "cat": "tech"
     },
     {
-      "name": "Xanga",
+      "name": "xXanga",
       "uri_check": "http://{account}.xanga.com/",
       "e_code": 200,
       "e_string": "s Xanga Site | Just",

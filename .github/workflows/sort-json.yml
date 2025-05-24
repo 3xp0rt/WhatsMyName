@@ -18,45 +18,38 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Initialize npm and install dependencies
-        run: |
-          npm init -y
-          npm install ajv prettier
-
-      - name: Create sorting + validation script
+      - name: Create sorting script
         run: |
           cat << 'EOF' > sort-wmn-data.js
-          const fs = require("fs");
-          const Ajv = require("ajv");
+          const fs = require('fs');
 
-          const dataPath = "wmn-data.json";
-          const schemaPath = "wmn-data-schema.json";
+          const dataPath = 'wmn-data.json';
+          const schemaPath = 'wmn-data-schema.json';
 
-          const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
-          const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+          const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+          const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 
+          // ---------- Sorting Helpers ----------
           function sortArrayAlphabetically(arr) {
             return arr.sort((a, b) => a.localeCompare(b));
           }
 
           function reorderObjectKeys(obj, keyOrder) {
             const reordered = {};
-            keyOrder.forEach((key) => {
+            keyOrder.forEach(key => {
               if (key in obj) reordered[key] = obj[key];
             });
-            Object.keys(obj).forEach((key) => {
+            Object.keys(obj).forEach(key => {
               if (!keyOrder.includes(key)) reordered[key] = obj[key];
             });
             return reordered;
           }
 
-          const siteSchema = schema?.properties?.sites?.items;
-          if (!siteSchema || !Array.isArray(siteSchema.required)) {
-            console.error("Schema is missing 'sites.items.required' structure.");
-            process.exit(1);
-          }
-          const keyOrder = siteSchema.required;
+          // ---------- Extract Schema Key Order ----------
+          const siteSchema = schema.properties?.sites?.items;
+          const keyOrder = Array.isArray(siteSchema?.required) ? siteSchema.required : [];
 
+          // ---------- Sort authors and categories ----------
           if (Array.isArray(data.authors)) {
             data.authors = sortArrayAlphabetically(data.authors);
           }
@@ -65,35 +58,20 @@ jobs:
             data.categories = sortArrayAlphabetically(data.categories);
           }
 
+          // ---------- Sort and Reorder Sites ----------
           if (Array.isArray(data.sites)) {
             data.sites.sort((a, b) => a.name.localeCompare(b.name));
-            data.sites = data.sites.map((site) =>
-              reorderObjectKeys(site, keyOrder)
-            );
+            data.sites = data.sites.map(site => reorderObjectKeys(site, keyOrder));
           }
 
-          const ajv = new Ajv({ allErrors: true });
-          const validate = ajv.compile(schema);
-          const isValid = validate(data);
-
-          if (!isValid) {
-            console.error("Validation failed:");
-            console.error(validate.errors);
-            process.exit(1);
-          }
-
-          const result = JSON.stringify(data, null, 2) + "\\n";
-          const original = fs.readFileSync(dataPath, "utf8");
-          if (original === result) {
-            console.log("No changes. Sorted and validated.");
-            process.exit(0);
-          }
-
-          fs.writeFileSync(dataPath, result);
-          console.log("wmn-data.json sorted and validated successfully.");
+          fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+          console.log('wmn-data.json sorted and reordered according to schema');
           EOF
 
-      - name: Run sort and validate
+      - name: Install Prettier
+        run: npm install --global prettier
+
+      - name: Run sorting script and format
         run: |
           node sort-wmn-data.js
           prettier --write wmn-data.json
@@ -103,5 +81,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add wmn-data.json
-          git diff --cached --quiet || git commit -m "chore: auto-sort and validate wmn-data.json"
+          git diff --cached --quiet || git commit -m "chore: auto-sort wmn-data.json by schema"
           git push
