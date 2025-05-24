@@ -324,7 +324,7 @@
       "cat": "social"
     },
     {
-      "name": "Apex Legends",
+      "name": "1Apex Legends",
       "uri_check": "https://api.tracker.gg/api/v2/apex/standard/profile/origin/{account}",
       "uri_pretty": "https://apex.tracker.gg/apex/profile/origin/{account}/overview",
       "headers": {
