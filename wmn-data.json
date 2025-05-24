@@ -6882,7 +6882,7 @@
       "cat": "video"
     },
     {
-      "name": "VK",
+      "name": "VKK",
       "uri_check": "https://vk.com/{account}",
       "e_code": 200,
       "e_string": "content=\"profile\"",
