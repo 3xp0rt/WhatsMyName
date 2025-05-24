@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'wmn-data.json'
+      - 'wmn-data-schema.json'
 
 jobs:
   sort-json:
@@ -22,9 +23,17 @@ jobs:
           cat << 'EOF' > sort-wmn-data.js
           const fs = require('fs');
 
-          const filePath = 'wmn-data.json';
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const dataPath = 'wmn-data.json';
+          const schemaPath = 'wmn-data-schema.json';
 
+          const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+          const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+
+          // Get key order dynamically from schema
+          const siteSchema = schema.properties?.sites?.items;
+          const keyOrder = Array.isArray(siteSchema?.required) ? siteSchema.required : [];
+
+          // Sort authors and categories
           if (Array.isArray(data.authors)) {
             data.authors.sort((a, b) => a.localeCompare(b));
           }
@@ -33,12 +42,33 @@ jobs:
             data.categories.sort((a, b) => a.localeCompare(b));
           }
 
+          // Sort sites by name, and reorder keys based on schema
           if (Array.isArray(data.sites)) {
             data.sites.sort((a, b) => a.name.localeCompare(b.name));
+
+            data.sites = data.sites.map(site => {
+              const reordered = {};
+
+              // Keep schema-defined keys in order
+              keyOrder.forEach(key => {
+                if (key in site) {
+                  reordered[key] = site[key];
+                }
+              });
+
+              // Add any remaining keys not in schema-defined order
+              Object.keys(site).forEach(key => {
+                if (!keyOrder.includes(key)) {
+                  reordered[key] = site[key];
+                }
+              });
+
+              return reordered;
+            });
           }
 
-          fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-          console.log('Sorted wmn-data.json');
+          fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+          console.log('wmn-data.json sorted and reordered according to schema');
           EOF
 
       - name: Install Prettier
@@ -54,5 +84,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add wmn-data.json
-          git diff --cached --quiet || git commit -m "chore: auto-sort and format wmn-data.json"
+          git diff --cached --quiet || git commit -m "chore: auto-sort wmn-data.json by schema"
           git push
