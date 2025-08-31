@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/object1658520065.json",
+  "$id": "https://raw.githubusercontent.com/WebBreacher/WhatsMyName/main/wmn-data-schema.json",
   "title": "WhatsMyName",
   "type": "object",
   "required": [
@@ -99,7 +99,7 @@
               }
             ]
           },
-          "account_pattern": {
+          "a_pattern": {
             "type": "string",
             "description": "Regular expression for validating usernames (accounts) on this site.",
             "format": "regex",
@@ -150,6 +150,7 @@
             "type": "array",
             "description": "A list of user accounts that can be used to test for user enumeration",
             "uniqueItems": true,
+            "minItems": 1,
             "items": {
               "type": "string",
               "examples": [
@@ -231,7 +232,38 @@
           "required": [
             "headers"
           ]
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "post_body": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "post_body"
+              ]
+            },
+            "then": {
+              "properties": {
+                "post_body": {
+                  "type": "string",
+                  "pattern": "\\{account\\}"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "uri_check": {
+                  "type": "string",
+                  "pattern": "\\{account\\}"
+                }
+              }
+            }
+          }
+        ]
       }
     }
   }

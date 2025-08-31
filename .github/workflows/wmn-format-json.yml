@@ -30,7 +30,7 @@ jobs:
           pip install rich
 
       - name: Run dataset formatting
-        run: python scripts/wmn_format_json.py
+        run: python scripts/wmn_format_dataset.py
 
       - name: Commit changes if needed
         run: |

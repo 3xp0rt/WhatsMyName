@@ -26,5 +26,4 @@ jobs:
           pip install jsonschema rich
 
       - name: Run dataset validation
-        run: |
-          python scripts/wmn_validate_json.py
+        run: python scripts/wmn_validate_dataset.py

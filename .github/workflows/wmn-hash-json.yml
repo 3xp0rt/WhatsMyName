@@ -30,7 +30,7 @@ jobs:
           pip install rich
 
       - name: Generate hash files
-        run: python scripts/wmn_hash_json.py
+        run: python scripts/wmn_hash_dataset.py
 
       - name: Commit hash changes if needed
         run: |
